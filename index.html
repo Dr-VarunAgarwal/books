@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Books — lucidité</title>
+<meta name="description" content="A reading log by Varun Agarwal.">
+
+<!--
+  BOOKS PAGE — plain HTML/CSS/JS, no build step, matching the same
+  DIY convention as the /wander site (see wander/SETUP.md).
+
+  TO ADD A BOOK:
+  Scroll to the DATA array below, copy an existing entry, paste it as
+  a new line, give it the next id, and fill in cover / title / note.
+
+  COVER IMAGES:
+  Pulled from Open Library's cover service (covers.openlibrary.org) —
+  it's a free, public-domain-friendly, built-for-hotlinking service
+  run by the Internet Archive, so there's nothing of ours to host or
+  keep alive. Two exceptions, both worth swapping for an Open Library
+  link if one shows up later: "The Wish Maker" points at an Internet
+  Archive scan (archive.org/services/img/...), and "No Friend But the
+  Mountains" points at a Google Books thumbnail whose URL contains a
+  token (imgtk=...) that could eventually expire — if that cover ever
+  breaks, that's why.
+
+  Zero dependence on Cargo now — nothing on this page points back at
+  freight.cargo.site anymore.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,480;0,9..144,600;1,9..144,400;1,9..144,500&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink: #1b2119;
+    --ink-soft: #242c22;
+    --paper: #f1e7d2;
+    --paper-soft: #e6d9bd;
+    --gold: #c29a4b;
+    --oxblood: #7b3131;
+    --text-on-ink: #e8dfc8;
+    --muted-on-ink: rgba(232,223,200,0.5);
+    --text-on-paper: #2a241c;
+    --muted-on-paper: rgba(42,36,28,0.55);
+    --max: 1120px;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin: 0;
+    background: var(--ink);
+    color: var(--text-on-ink);
+    font-family: "Newsreader", serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a{ color: inherit; }
+
+  .wrap{
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 1.75rem;
+  }
+
+  /* ---------- header ---------- */
+
+  header.site-header{
+    padding: 4.5rem 0 3rem;
+    border-bottom: 1px solid rgba(232,223,200,0.14);
+  }
+
+  .wordmark{
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-optical-sizing: auto;
+    font-weight: 480;
+    font-size: clamp(2.75rem, 8vw, 4.75rem);
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1;
+    color: var(--text-on-ink);
+  }
+
+  .byline{
+    font-family: "Space Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-on-ink);
+    margin-top: 0.9rem;
+  }
+
+  nav.site-nav{
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-family: "Space Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  nav.site-nav a{
+    text-decoration: none;
+    color: var(--muted-on-ink);
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  nav.site-nav a:hover{
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+
+  /* ---------- intro ---------- */
+
+  .intro{
+    padding: 3.5rem 0 1rem;
+  }
+
+  .eyebrow{
+    font-family: "Space Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 0.9rem;
+  }
+
+  .intro h1{
+    font-family: "Fraunces", serif;
+    font-weight: 340;
+    font-optical-sizing: auto;
+    font-size: clamp(1.9rem, 4.2vw, 2.75rem);
+    line-height: 1.15;
+    max-width: 20ch;
+    margin: 0 0 1rem;
+    color: var(--text-on-ink);
+  }
+
+  .intro p{
+    max-width: 52ch;
+    color: var(--muted-on-ink);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .intro p a{
+    color: var(--text-on-ink);
+    text-decoration-color: var(--gold);
+    text-underline-offset: 3px;
+  }
+
+  /* ---------- shelf / grid ---------- */
+
+  .shelf{
+    padding: 3.5rem 0 6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 3.75rem 2.25rem;
+  }
+
+  .book{
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .book.is-visible{
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .book-frame{
+    position: relative;
+  }
+
+  .book-cover{
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 1px 5px 5px 1px;
+    box-shadow:
+      2px 2px 0 0 var(--paper-soft),
+      4px 4px 0 0 var(--paper),
+      6px 6px 0 0 var(--paper-soft),
+      9px 11px 20px rgba(0,0,0,0.4);
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s ease;
+    cursor: default;
+  }
+
+  .book:hover .book-cover{
+    transform: translate(-4px,-6px);
+    box-shadow:
+      2px 2px 0 0 var(--paper-soft),
+      4px 4px 0 0 var(--paper),
+      6px 6px 0 0 var(--paper-soft),
+      13px 17px 26px rgba(0,0,0,0.48);
+  }
+
+  .ribbon{
+    position: absolute;
+    top: -8px;
+    right: 14px;
+    width: 15px;
+    height: 34px;
+    background: var(--oxblood);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.35);
+  }
+
+  .book-caption{
+    margin-top: 1rem;
+    padding-right: 6px;
+  }
+
+  .book-title{
+    font-family: "Fraunces", serif;
+    font-weight: 480;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    color: var(--text-on-ink);
+  }
+
+  .book-author{
+    font-family: "Space Mono", monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    color: var(--muted-on-ink);
+    margin-top: 0.2rem;
+  }
+
+  .book-note{
+    font-style: italic;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--muted-on-ink);
+    margin-top: 0.35rem;
+  }
+
+  .book-date{
+    font-family: "Space Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: var(--gold);
+    margin-top: 0.35rem;
+    display: block;
+  }
+
+  /* ---------- footer ---------- */
+
+  footer{
+    border-top: 1px solid rgba(232,223,200,0.14);
+    padding: 2.25rem 0 3rem;
+    font-family: "Space Mono", monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--muted-on-ink);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    justify-content: space-between;
+  }
+
+  footer a{
+    color: var(--muted-on-ink);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(232,223,200,0.25);
+  }
+
+  footer a:hover{
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+    .book, .book-cover{ transition: none !important; }
+    .book{ opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="site-header">
+    <p class="wordmark">lucidité</p>
+    <p class="byline">Varun Agarwal — a reading log</p>
+    <nav class="site-nav">
+      <a href="https://www.instagram.com/ag.varun" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.goodreads.com/varunagarwal" target="_blank" rel="noopener">GoodReads</a>
+    </nav>
+  </header>
+
+  <section class="intro">
+    <span class="eyebrow">Books</span>
+    <h1>What I've been reading lately.</h1>
+    <p>Recently read, roughly newest first. Older ones I haven't logged here yet live on <a href="https://www.goodreads.com/varunagarwal" target="_blank" rel="noopener">GoodReads</a>.</p>
+  </section>
+
+  <section class="shelf" id="shelf"></section>
+
+  <footer>
+    <span>Migrated from Cargo, October 2026.</span>
+    <a href="https://www.instagram.com/ag.varun" target="_blank" rel="noopener">Instagram ↗</a>
+  </footer>
+</div>
+
+<script>
+  // ---- DATA ---------------------------------------------------------
+  // One object per book. `note` is either a short line of commentary,
+  // a bare date (auto-detected and styled as a stamp), or null.
+  // `author` is optional — leave it off (or set to null) if you'd
+  // rather not print it under the title.
+
+  const DATA = [
+    { id: 0,  cover: "https://covers.openlibrary.org/b/id/417792-L.jpg",
+      title: "The Heart Is a Lonely Hunter", author: "Carson McCullers", note: "First read of 2026" },
+
+    { id: 1,  cover: "https://covers.openlibrary.org/b/id/6459719-L.jpg",
+      title: "The Catcher in the Rye", author: "J.D. Salinger", note: "Top spot." },
+
+    { id: 2,  cover: "https://covers.openlibrary.org/b/id/180213-L.jpg",
+      title: "Shantaram", author: "Gregory David Roberts", note: null },
+
+    { id: 3,  cover: "https://covers.openlibrary.org/b/id/15110590-L.jpg",
+      title: "Flesh", author: "David Szalay", note: "Booker Winner 2025. Random pick." },
+
+    { id: 4,  cover: "https://archive.org/services/img/wishmaker0000seth_v4r4",
+      title: "The Wish Maker", author: "Ali Sethi", note: null },
+
+    { 
+      id: 5,  cover: "https://covers.openlibrary.org/b/id/9766264-L.jpg",
+      title: "Oranges", author: "John McPhee", note: "Can't recall what made me pick this book up. Well a know a couple of things about another fruit now I guess?" },
+
+    { id: 6,  cover: "https://covers.openlibrary.org/b/id/7963317-L.jpg",
+      title: "Pride of Baghdad", author: "Brian K. Vaughan & Niko Henrichon", note: null },
+
+    { id: 7,  cover: "https://covers.openlibrary.org/b/id/5984628-L.jpg",
+      title: "Asterios Polyp", author: "David Mazzucchelli", note: null },
+
+    { id: 8,  cover: "https://books.google.com/books/content?id=6teYtAEACAAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE704OJ3LJeAXyZ1diAac6-7_MykA54Hq4Th3vq2E7ehSel6vj7fQmV8koBfJXP4r1fJiFKdyk4jRmoKAs4_1v761W3MQMEhPPHF8QOZfpWud9iD0EVN9Ipxc9JAhYMtkYOFdz652",
+      title: "No Friend But the Mountains", author: "Behrouz Boochani", note: "Written from a prison. Picked it back when it was published - 28.02.2019" },
+
+    { id: 9,  cover: "https://covers.openlibrary.org/b/id/4728270-L.jpg",
+      title: "Understanding Comics", author: "Scott McCloud", note: null },
+
+    { id: 10, cover: "https://covers.openlibrary.org/b/id/6699744-L.jpg",
+      title: "Daytripper", author: "Fábio Moon & Gabriel Bá", note: null },
+
+    { id: 11, cover: "https://covers.openlibrary.org/b/id/7090206-L.jpg",
+      title: "Ghost in the Wires", author: "Kevin Mitnick", note: null },
+
+    { id: 12, cover: "https://covers.openlibrary.org/b/id/12455001-L.jpg",
+      title: "Project Hail Mary", author: "Andy Weir", note: "20.12.2025" },
+
+    { id: 13, cover: "https://covers.openlibrary.org/b/id/15139521-L.jpg",
+      title: "Maus", author: "Art Spiegelman", note: null },
+
+    { id: 14, cover: "https://covers.openlibrary.org/b/id/2411534-L.jpg",
+      title: "Persepolis", author: "Marjane Satrapi", note: "RIP." },
+
+    { id: 15, cover: "https://covers.openlibrary.org/b/id/6468653-L.jpg",
+      title: "Catch-22", author: "Joseph Heller", note: null },
+  ];
+
+  // ---- render ---------------------------------------------------------
+
+  const DATE_RE = /^\d{1,2}\.\d{1,2}\.\d{4}$/;
+
+  function bookEl(b){
+    const el = document.createElement('article');
+    el.className = 'book';
+
+    const frame = document.createElement('div');
+    frame.className = 'book-frame';
+
+    if (b.note) {
+      const ribbon = document.createElement('div');
+      ribbon.className = 'ribbon';
+      frame.appendChild(ribbon);
+    }
+
+    const img = document.createElement('img');
+    img.className = 'book-cover';
+    img.src = b.cover;
+    img.loading = 'lazy';
+    img.alt = b.author ? `${b.title}, by ${b.author}` : b.title;
+    frame.appendChild(img);
+
+    el.appendChild(frame);
+
+    const caption = document.createElement('div');
+    caption.className = 'book-caption';
+
+    const title = document.createElement('div');
+    title.className = 'book-title';
+    title.textContent = b.title;
+    caption.appendChild(title);
+
+    if (b.author) {
+      const author = document.createElement('div');
+      author.className = 'book-author';
+      author.textContent = b.author;
+      caption.appendChild(author);
+    }
+
+    if (b.note) {
+      if (DATE_RE.test(b.note.trim())) {
+        const date = document.createElement('span');
+        date.className = 'book-date';
+        date.textContent = b.note.trim();
+        caption.appendChild(date);
+      } else {
+        const note = document.createElement('div');
+        note.className = 'book-note';
+        note.textContent = b.note;
+        caption.appendChild(note);
+      }
+    }
+
+    el.appendChild(caption);
+    return el;
+  }
+
+  const shelf = document.getElementById('shelf');
+  DATA.forEach(b => shelf.appendChild(bookEl(b)));
+
+  // stagger a simple reveal as cards enter view
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('is-visible'), i * 40);
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.book').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
