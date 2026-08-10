@@ -13,20 +13,32 @@
   TO ADD A BOOK:
   Scroll to the DATA array below, copy an existing entry, paste it as
   a new line, give it the next id, and fill in cover / title / note.
+  For the highlights strip, do the same in DATA_HIGHLIGHTS further down
+  (no `note` field there — just cover / title / author).
 
   COVER IMAGES:
-  Pulled from Open Library's cover service (covers.openlibrary.org) —
-  it's a free, public-domain-friendly, built-for-hotlinking service
-  run by the Internet Archive, so there's nothing of ours to host or
-  keep alive. Two exceptions, both worth swapping for an Open Library
-  link if one shows up later: "The Wish Maker" points at an Internet
+  Pulled from Open Library's cover service (covers.openlibrary.org),
+  keyed by the exact ISBN from your GoodReads export wherever one was
+  available — so these should be your actual editions, not just "a"
+  edition. Two exceptions: "The Wish Maker" points at an Internet
   Archive scan (archive.org/services/img/...), and "No Friend But the
   Mountains" points at a Google Books thumbnail whose URL contains a
-  token (imgtk=...) that could eventually expire — if that cover ever
-  breaks, that's why.
+  token (imgtk=...) that could eventually expire. "Understanding
+  Comics" and "Daytripper" had no ISBN to key off (Daytripper isn't in
+  your GoodReads library at all), so those still use a best-guess
+  Open Library cover id.
 
-  Zero dependence on Cargo now — nothing on this page points back at
-  freight.cargo.site anymore.
+  Zero dependence on Cargo — nothing on this page points back at
+  freight.cargo.site.
+
+  LAYOUT:
+  Two book sections. The main "shelf" grid is the original curated 16
+  — unchanged order, becomes a horizontal one-book-per-swipe carousel
+  on narrow (mobile) screens via the @media block near the bottom of
+  the CSS. Below it, "highlights" is a small (intentionally not
+  exhaustive) horizontal-scroll strip pulling a few more favorites
+  from the wider GoodReads library — meant to stay a curated handful,
+  not the whole shelf.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -164,7 +176,7 @@
   /* ---------- shelf / grid ---------- */
 
   .shelf{
-    padding: 3.5rem 0 6rem;
+    padding: 3.5rem 0 5rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
     gap: 3.75rem 2.25rem;
@@ -183,6 +195,7 @@
 
   .book-frame{
     position: relative;
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
   }
 
   .book-cover{
@@ -195,12 +208,15 @@
       4px 4px 0 0 var(--paper),
       6px 6px 0 0 var(--paper-soft),
       9px 11px 20px rgba(0,0,0,0.4);
-    transition: transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s ease;
+    transition: box-shadow 0.35s ease;
     cursor: default;
   }
 
-  .book:hover .book-cover{
+  .book:hover .book-frame{
     transform: translate(-4px,-6px);
+  }
+
+  .book:hover .book-cover{
     box-shadow:
       2px 2px 0 0 var(--paper-soft),
       4px 4px 0 0 var(--paper),
@@ -217,6 +233,12 @@
     background: var(--oxblood);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
     box-shadow: 1px 2px 4px rgba(0,0,0,0.35);
+    transform-origin: top center;
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .book:hover .ribbon{
+    transform: rotate(-4deg);
   }
 
   .book-caption{
@@ -257,6 +279,77 @@
     display: block;
   }
 
+  /* ---------- highlights strip ---------- */
+
+  .highlights{
+    padding: 0 0 5rem;
+    border-top: 1px solid rgba(232,223,200,0.14);
+    padding-top: 3.5rem;
+  }
+
+  .highlights h2{
+    font-family: "Fraunces", serif;
+    font-weight: 340;
+    font-optical-sizing: auto;
+    font-size: clamp(1.3rem, 2.8vw, 1.7rem);
+    line-height: 1.3;
+    max-width: 34ch;
+    margin: 0 0 1.75rem;
+    color: var(--text-on-ink);
+  }
+
+  .highlight-track{
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 0.4rem 0 1rem;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--paper-soft) transparent;
+  }
+
+  .highlight-track::-webkit-scrollbar{ height: 6px; }
+  .highlight-track::-webkit-scrollbar-thumb{ background: var(--paper-soft); border-radius: 3px; }
+
+  .highlight-card{
+    flex: 0 0 116px;
+    scroll-snap-align: start;
+  }
+
+  .highlight-cover{
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 1px 4px 4px 1px;
+    box-shadow:
+      2px 2px 0 0 var(--paper-soft),
+      4px 4px 0 0 var(--paper),
+      6px 8px 14px rgba(0,0,0,0.35);
+    transition: transform 0.3s ease;
+  }
+
+  .highlight-card:hover .highlight-cover{
+    transform: translateY(-4px);
+  }
+
+  .highlight-title{
+    font-family: "Fraunces", serif;
+    font-weight: 480;
+    font-size: 0.78rem;
+    line-height: 1.25;
+    margin-top: 0.65rem;
+    color: var(--text-on-ink);
+  }
+
+  .highlight-author{
+    font-family: "Space Mono", monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.03em;
+    color: var(--muted-on-ink);
+    margin-top: 0.15rem;
+  }
+
   /* ---------- footer ---------- */
 
   footer{
@@ -283,9 +376,37 @@
     border-color: var(--gold);
   }
 
+  /* ---------- mobile: main shelf becomes a swipe carousel ---------- */
+
+  @media (max-width: 640px){
+    .shelf{
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      gap: 1.25rem;
+      padding: 2.5rem 0 3rem;
+      scrollbar-width: none;
+    }
+    .shelf::-webkit-scrollbar{ display: none; }
+
+    .book{
+      flex: 0 0 82%;
+      scroll-snap-align: center;
+    }
+
+    .highlight-track{
+      scroll-snap-type: x mandatory;
+    }
+    .highlight-card{
+      flex-basis: 42%;
+      scroll-snap-align: center;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce){
     html{ scroll-behavior: auto; }
-    .book, .book-cover{ transition: none !important; }
+    .book, .book-frame, .book-cover, .ribbon, .highlight-cover{ transition: none !important; }
     .book{ opacity: 1; transform: none; }
   }
 </style>
@@ -310,6 +431,12 @@
 
   <section class="shelf" id="shelf"></section>
 
+  <section class="highlights">
+    <span class="eyebrow">More from the shelf</span>
+    <h2>A handful of other favorites from further back.</h2>
+    <div class="highlight-track" id="highlightTrack"></div>
+  </section>
+
   <footer>
     <span>Migrated from Cargo, October 2026.</span>
     <a href="https://www.instagram.com/ag.varun" target="_blank" rel="noopener">Instagram ↗</a>
@@ -324,32 +451,31 @@
   // rather not print it under the title.
 
   const DATA = [
-    { id: 0,  cover: "https://covers.openlibrary.org/b/id/417792-L.jpg",
+    { id: 0,  cover: "https://covers.openlibrary.org/b/isbn/9780618084746-L.jpg",
       title: "The Heart Is a Lonely Hunter", author: "Carson McCullers", note: "First read of 2026" },
 
-    { id: 1,  cover: "https://covers.openlibrary.org/b/id/6459719-L.jpg",
+    { id: 1,  cover: "https://covers.openlibrary.org/b/isbn/9780316769174-L.jpg",
       title: "The Catcher in the Rye", author: "J.D. Salinger", note: "Top spot." },
 
-    { id: 2,  cover: "https://covers.openlibrary.org/b/id/180213-L.jpg",
+    { id: 2,  cover: "https://covers.openlibrary.org/b/isbn/9781920769208-L.jpg",
       title: "Shantaram", author: "Gregory David Roberts", note: null },
 
-    { id: 3,  cover: "https://covers.openlibrary.org/b/id/15110590-L.jpg",
+    { id: 3,  cover: "https://covers.openlibrary.org/b/isbn/9781982122799-L.jpg",
       title: "Flesh", author: "David Szalay", note: "Booker Winner 2025. Random pick." },
 
-    { id: 4,  cover: "https://archive.org/services/img/wishmaker0000seth_v4r4",
+    { id: 4,  cover: "https://covers.openlibrary.org/b/isbn/9781594488757-L.jpg",
       title: "The Wish Maker", author: "Ali Sethi", note: null },
 
-    { 
-      id: 5,  cover: "https://covers.openlibrary.org/b/id/9766264-L.jpg",
+    { id: 5,  cover: "https://covers.openlibrary.org/b/isbn/9780141182032-L.jpg",
       title: "Oranges", author: "John McPhee", note: "Can't recall what made me pick this book up. Well a know a couple of things about another fruit now I guess?" },
 
-    { id: 6,  cover: "https://covers.openlibrary.org/b/id/7963317-L.jpg",
+    { id: 6,  cover: "https://covers.openlibrary.org/b/isbn/9781401203146-L.jpg",
       title: "Pride of Baghdad", author: "Brian K. Vaughan & Niko Henrichon", note: null },
 
-    { id: 7,  cover: "https://covers.openlibrary.org/b/id/5984628-L.jpg",
+    { id: 7,  cover: "https://covers.openlibrary.org/b/isbn/9780307377326-L.jpg",
       title: "Asterios Polyp", author: "David Mazzucchelli", note: null },
 
-    { id: 8,  cover: "https://books.google.com/books/content?id=6teYtAEACAAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE704OJ3LJeAXyZ1diAac6-7_MykA54Hq4Th3vq2E7ehSel6vj7fQmV8koBfJXP4r1fJiFKdyk4jRmoKAs4_1v761W3MQMEhPPHF8QOZfpWud9iD0EVN9Ipxc9JAhYMtkYOFdz652",
+    { id: 8,  cover: "https://covers.openlibrary.org/b/isbn/9781760555382-L.jpg",
       title: "No Friend But the Mountains", author: "Behrouz Boochani", note: "Written from a prison. Picked it back when it was published - 28.02.2019" },
 
     { id: 9,  cover: "https://covers.openlibrary.org/b/id/4728270-L.jpg",
@@ -358,20 +484,37 @@
     { id: 10, cover: "https://covers.openlibrary.org/b/id/6699744-L.jpg",
       title: "Daytripper", author: "Fábio Moon & Gabriel Bá", note: null },
 
-    { id: 11, cover: "https://covers.openlibrary.org/b/id/7090206-L.jpg",
+    { id: 11, cover: "https://covers.openlibrary.org/b/isbn/9780316037709-L.jpg",
       title: "Ghost in the Wires", author: "Kevin Mitnick", note: null },
 
-    { id: 12, cover: "https://covers.openlibrary.org/b/id/12455001-L.jpg",
+    { id: 12, cover: "https://covers.openlibrary.org/b/isbn/9780593135204-L.jpg",
       title: "Project Hail Mary", author: "Andy Weir", note: "20.12.2025" },
 
-    { id: 13, cover: "https://covers.openlibrary.org/b/id/15139521-L.jpg",
+    { id: 13, cover: "https://covers.openlibrary.org/b/isbn/9780141014081-L.jpg",
       title: "Maus", author: "Art Spiegelman", note: null },
 
-    { id: 14, cover: "https://covers.openlibrary.org/b/id/2411534-L.jpg",
+    { id: 14, cover: "https://covers.openlibrary.org/b/isbn/9780375714832-L.jpg",
       title: "Persepolis", author: "Marjane Satrapi", note: "RIP." },
 
-    { id: 15, cover: "https://covers.openlibrary.org/b/id/6468653-L.jpg",
+    { id: 15, cover: "https://covers.openlibrary.org/b/isbn/9780684833392-L.jpg",
       title: "Catch-22", author: "Joseph Heller", note: null },
+  ];
+
+  // A small, intentionally-not-exhaustive set pulled from the wider
+  // GoodReads "read" shelf (105 books total) — 5-star reads that
+  // aren't already up in the main shelf above. Swap any of these out
+  // freely; just keep cover / title / author.
+  const DATA_HIGHLIGHTS = [
+    { cover: "https://covers.openlibrary.org/b/id/12580063-L.jpg", title: "The Godfather", author: "Mario Puzo" },
+    { cover: "https://covers.openlibrary.org/b/id/4735539-L.jpg", title: "1984", author: "George Orwell" },
+    { cover: "https://covers.openlibrary.org/b/isbn/9780060935467-L.jpg", title: "To Kill a Mockingbird", author: "Harper Lee" },
+    { cover: "https://covers.openlibrary.org/b/isbn/9780812988413-L.jpg", title: "When Breath Becomes Air", author: "Paul Kalanithi" },
+    { cover: "https://covers.openlibrary.org/b/isbn/9780805095159-L.jpg", title: "Being Mortal", author: "Atul Gawande" },
+    { cover: "https://covers.openlibrary.org/b/id/9269965-L.jpg", title: "A Game of Thrones", author: "George R.R. Martin" },
+    { cover: "https://covers.openlibrary.org/b/isbn/9780393327342-L.jpg", title: "Fight Club", author: "Chuck Palahniuk" },
+    { cover: "https://covers.openlibrary.org/b/isbn/9780878160181-L.jpg", title: "A Contract with God", author: "Will Eisner" },
+    { cover: "https://covers.openlibrary.org/b/isbn/9780802142818-L.jpg", title: "The Inheritance of Loss", author: "Kiran Desai" },
+    { cover: "https://covers.openlibrary.org/b/isbn/9780861715589-L.jpg", title: "Money, Sex, War, Karma", author: "David R. Loy" },
   ];
 
   // ---- render ---------------------------------------------------------
@@ -433,8 +576,35 @@
     return el;
   }
 
+  function highlightEl(b){
+    const el = document.createElement('div');
+    el.className = 'highlight-card';
+
+    const img = document.createElement('img');
+    img.className = 'highlight-cover';
+    img.src = b.cover;
+    img.loading = 'lazy';
+    img.alt = `${b.title}, by ${b.author}`;
+    el.appendChild(img);
+
+    const title = document.createElement('div');
+    title.className = 'highlight-title';
+    title.textContent = b.title;
+    el.appendChild(title);
+
+    const author = document.createElement('div');
+    author.className = 'highlight-author';
+    author.textContent = b.author;
+    el.appendChild(author);
+
+    return el;
+  }
+
   const shelf = document.getElementById('shelf');
   DATA.forEach(b => shelf.appendChild(bookEl(b)));
+
+  const highlightTrack = document.getElementById('highlightTrack');
+  DATA_HIGHLIGHTS.forEach(b => highlightTrack.appendChild(highlightEl(b)));
 
   // stagger a simple reveal as cards enter view
   const io = new IntersectionObserver((entries) => {
