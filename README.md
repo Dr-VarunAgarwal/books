@@ -5,7 +5,7 @@ blog — migrated off Cargo, no build step, plain HTML/CSS/JS.
 
 Deploys to **books.varunagarwal.com** via GitHub Pages.
 
-`lucidité` will eventually be the home for the rest of the blog too
+**lucidité** will eventually be the home for the rest of the blog too
 (about, photos, and the other sections listed in
 `../_cargo-backup/site-nav.md`), added sequentially. This repo is just
 the books section for now — a standalone placeholder, not the full site
