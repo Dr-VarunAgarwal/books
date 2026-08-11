@@ -14,7 +14,8 @@
   Scroll to the DATA array below, copy an existing entry, paste it as
   a new line, give it the next id, and fill in cover / title / note.
   For the highlights strip, do the same in DATA_HIGHLIGHTS further down
-  (no `note` field there — just cover / title / author).
+  (no `note` field there — just cover / title / author). For the plain
+  text catch-all list, add to DATA_REST the same way.
 
   COVER IMAGES:
   Pulled from Open Library's cover service (covers.openlibrary.org),
@@ -32,13 +33,14 @@
   freight.cargo.site.
 
   LAYOUT:
-  Two book sections. The main "shelf" grid is the original curated 16
+  Three book sections. The main "shelf" grid is the original curated 16
   — unchanged order, becomes a horizontal one-book-per-swipe carousel
   on narrow (mobile) screens via the @media block near the bottom of
   the CSS. Below it, "highlights" is a small (intentionally not
   exhaustive) horizontal-scroll strip pulling a few more favorites
-  from the wider GoodReads library — meant to stay a curated handful,
-  not the whole shelf.
+  from the wider GoodReads library. Below that, "rest" is a plain text
+  list of every other "read" book (no covers) plus the live GoodReads
+  grid widget, for anyone who wants to jump straight to the full shelf.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -350,6 +352,81 @@
     margin-top: 0.15rem;
   }
 
+  /* ---------- rest of the shelf: text list + GoodReads widget ---------- */
+
+  .rest{
+    padding: 3.5rem 0 5rem;
+    border-top: 1px solid rgba(232,223,200,0.14);
+  }
+
+  .rest h2{
+    font-family: "Fraunces", serif;
+    font-weight: 340;
+    font-optical-sizing: auto;
+    font-size: clamp(1.3rem, 2.8vw, 1.7rem);
+    line-height: 1.3;
+    max-width: 34ch;
+    margin: 0 0 0.75rem;
+    color: var(--text-on-ink);
+  }
+
+  .rest > p{
+    max-width: 56ch;
+    color: var(--muted-on-ink);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0 0 2.25rem;
+  }
+
+  .rest-layout{
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .rest-list{
+    columns: 2;
+    column-gap: 2rem;
+    font-size: 0.86rem;
+    line-height: 1.8;
+  }
+
+  .rest-item{
+    break-inside: avoid;
+  }
+
+  .rest-title{
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    color: var(--text-on-ink);
+  }
+
+  .rest-author{
+    font-family: "Space Mono", monospace;
+    font-size: 0.66rem;
+    color: var(--muted-on-ink);
+    letter-spacing: 0.02em;
+  }
+
+  .gr-widget-card{
+    background: var(--paper);
+    color: var(--text-on-paper);
+    border-radius: 3px;
+    padding: 1.25rem 1.25rem 0.75rem;
+    box-shadow: 6px 8px 22px rgba(0,0,0,0.4);
+    align-self: start;
+  }
+
+  @media (max-width: 800px){
+    .rest-layout{
+      grid-template-columns: 1fr;
+    }
+    .rest-list{
+      columns: 1;
+    }
+  }
+
   /* ---------- footer ---------- */
 
   footer{
@@ -437,6 +514,43 @@
     <div class="highlight-track" id="highlightTrack"></div>
   </section>
 
+  <section class="rest">
+    <span class="eyebrow">Everything else</span>
+    <h2>The rest of the shelf.</h2>
+    <p>Every other book marked "read" on GoodReads that isn't pictured above &mdash; just the list, no covers. The widget on the right pulls straight from GoodReads and updates itself as the shelf grows.</p>
+    <div class="rest-layout">
+      <div class="rest-list" id="restList"></div>
+      <div class="gr-widget-card">
+        <style type="text/css" media="screen">
+          .gr_grid_container {
+          }
+          .gr_grid_book_container {
+            float: left;
+            width: 39px;
+            height: 60px;
+            padding: 0px 0px;
+            overflow: hidden;
+          }
+        </style>
+        <div id="gr_grid_widget_1786388768">
+          <h2 style="margin-top:0;">
+            <a style="text-decoration: none; color: #382110;" rel="nofollow" href="https://www.goodreads.com/review/list/6865523-varun-agarwal?shelf=read&utm_medium=api&utm_source=grid_widget">Varun's books</a>
+          </h2>
+          <div class="gr_grid_container">
+            <div class="gr_grid_book_container"><a title="The Heart Is a Lonely Hunter" rel="nofollow" href="https://www.goodreads.com/book/show/37380.The_Heart_Is_a_Lonely_Hunter"><img alt="The Heart Is a Lonely Hunter" border="0" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1385265834l/37380._SY75_.jpg" /></a></div>
+            <div class="gr_grid_book_container"><a title="Project Hail Mary" rel="nofollow" href="https://www.goodreads.com/book/show/54493401-project-hail-mary"><img alt="Project Hail Mary" border="0" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1764703833l/54493401._SY75_.jpg" /></a></div>
+            <div class="gr_grid_book_container"><a title="Flesh" rel="nofollow" href="https://www.goodreads.com/book/show/214152261-flesh"><img alt="Flesh" border="0" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1717908661l/214152261._SY75_.jpg" /></a></div>
+            <div class="gr_grid_book_container"><a title="Oranges" rel="nofollow" href="https://www.goodreads.com/book/show/54983.Oranges"><img alt="Oranges" border="0" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1332100962l/54983._SY75_.jpg" /></a></div>
+            <div class="gr_grid_book_container"><a title="The Godfather (The Godfather, #1)" rel="nofollow" href="https://www.goodreads.com/book/show/22034.The_Godfather"><img alt="The Godfather" border="0" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1394988109l/22034._SY75_.jpg" /></a></div>
+          </div>
+          <br style="clear: both"/>
+          <a class="gr_grid_branding" style="font-size: .8em; color: #382110; text-decoration: none;" rel="nofollow" href="https://www.goodreads.com/user/show/6865523-varun-agarwal">more on GoodReads &raquo;</a>
+        </div>
+        <script src="https://www.goodreads.com/review/grid_widget/6865523?cover_size=&hide_link=&hide_title=&num_books=20&order=&shelf=read&sort=&widget_id=1786388768" type="text/javascript" charset="utf-8"></script>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <span>Migrated from Cargo, October 2026.</span>
     <a href="https://www.instagram.com/ag.varun" target="_blank" rel="noopener">Instagram ↗</a>
@@ -515,6 +629,93 @@
     { cover: "https://covers.openlibrary.org/b/isbn/9780878160181-L.jpg", title: "A Contract with God", author: "Will Eisner" },
     { cover: "https://covers.openlibrary.org/b/isbn/9780802142818-L.jpg", title: "The Inheritance of Loss", author: "Kiran Desai" },
     { cover: "https://covers.openlibrary.org/b/isbn/9780861715589-L.jpg", title: "Money, Sex, War, Karma", author: "David R. Loy" },
+  ];
+
+  // Every other "read" book on GoodReads not pictured above — plain text,
+  // no cover hunting needed. Sorted newest-read-first to match the rest
+  // of the page. Regenerate from a fresh GoodReads CSV export by diffing
+  // against the Book Ids already used in DATA / DATA_HIGHLIGHTS.
+  const DATA_REST = [
+    { title: "The Defining Decade: Why Your Twenties Matter—And How to Make the Most of Them Now", author: "Meg Jay" },
+    { title: "Why Buddhism is True: The Science and Philosophy of Meditation and Enlightenment", author: "Robert Wright" },
+    { title: "The Joy of Work", author: "S.A. Sapre" },
+    { title: "A Still Forest Pool: The Insight Meditation of Achaan Chah (Quest Book)", author: "Ajahn Chah" },
+    { title: "Habibi", author: "Craig Thompson" },
+    { title: "Stuff Matters: Exploring the Marvelous Materials That Shape Our Man-Made World", author: "Mark Miodownik" },
+    { title: "Batman: The Court of Owls Saga", author: "Scott Snyder" },
+    { title: "Batman: Hush", author: "Jeph Loeb" },
+    { title: "The Terrible and Wonderful Reasons Why I Run Long Distances (The Oatmeal, #5)", author: "Matthew Inman" },
+    { title: "Jonathan Livingston Seagull", author: "Richard Bach" },
+    { title: "The Metamorphosis", author: "Franz Kafka" },
+    { title: "Ayoade on Ayoade: A Cinematic Odyssey", author: "Richard Ayoade" },
+    { title: "How To Bullsh*t Your Way To Number 1: An Unorthodox Guide To 21st Century Success", author: "Oobah Butler" },
+    { title: "Fun Home: A Family Tragicomic", author: "Alison Bechdel" },
+    { title: "The Art of Racing in the Rain", author: "Garth Stein" },
+    { title: "Marvels", author: "Kurt Busiek" },
+    { title: "The Underwater Welder", author: "Jeff Lemire" },
+    { title: "Sshhh!", author: "Jason" },
+    { title: "Batman: The Black Mirror", author: "Scott Snyder" },
+    { title: "Good-Bye, Chunky Rice", author: "Craig Thompson" },
+    { title: "Batman: Arkham Asylum - A Serious House on Serious Earth", author: "Grant Morrison" },
+    { title: "The World of Edena", author: "Mœbius" },
+    { title: "Blankets", author: "Craig Thompson" },
+    { title: "Don't Lose Your Mind, Lose Your Weight", author: "Rujuta Diwekar" },
+    { title: "Harry Potter and the Deathly Hallows (Harry Potter, #7)", author: "J.K. Rowling" },
+    { title: "The Windfall", author: "Diksha Basu" },
+    { title: "Harry Potter and the Half-Blood Prince (Harry Potter, #6)", author: "J.K. Rowling" },
+    { title: "Harry Potter and the Goblet of Fire (Harry Potter, #4)", author: "J.K. Rowling" },
+    { title: "Tuesdays with Morrie: An Old Man, a Young Man, and Life's Greatest Lesson", author: "Mitch Albom" },
+    { title: "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)", author: "J.K. Rowling" },
+    { title: "Better: A Surgeon's Notes on Performance", author: "Atul Gawande" },
+    { title: "Harry Potter and the Chamber of Secrets (Harry Potter, #2)", author: "J.K. Rowling" },
+    { title: "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)", author: "J.K. Rowling" },
+    { title: "Love in the Time of Cholera", author: "Gabriel García Márquez" },
+    { title: "Complications: A Surgeon's Notes on an Imperfect Science", author: "Atul Gawande" },
+    { title: "The Name of the Rose", author: "Umberto Eco" },
+    { title: "Batman: The Killing Joke", author: "Alan Moore" },
+    { title: "Man's Search for Meaning", author: "Viktor E. Frankl" },
+    { title: "Mottled Dawn: Fifty Sketches and Stories of Partition", author: "Saadat Hasan Manto" },
+    { title: "The Checklist Manifesto: How to Get Things Right", author: "Atul Gawande" },
+    { title: "Cannery Row (Cannery Row, #1)", author: "John Steinbeck" },
+    { title: "Fight Club 2", author: "Chuck Palahniuk" },
+    { title: "One Flew Over the Cuckoo's Nest", author: "Ken Kesey" },
+    { title: "The Vegetarian", author: "Han Kang" },
+    { title: "Doctors", author: "Erich Segal" },
+    { title: "Breakdowns: Portrait of the Artist as a Young %@&*! (Pantheon Graphic Library)", author: "Art Spiegelman" },
+    { title: "Watchmen", author: "Alan Moore" },
+    { title: "Ready Player One (Ready Player One, #1)", author: "Ernest Cline" },
+    { title: "The Martian", author: "Andy Weir" },
+    { title: "Gray Mountain", author: "John Grisham" },
+    { title: "The Emperor of All Maladies: A Biography of Cancer", author: "Siddhartha Mukherjee" },
+    { title: "Train to Pakistan", author: "Khushwant Singh" },
+    { title: "On the Road", author: "Jack Kerouac" },
+    { title: "River of Death", author: "Alistair MacLean" },
+    { title: "The Fountainhead", author: "Ayn Rand" },
+    { title: "Love Story (Love Story, #1)", author: "Erich Segal" },
+    { title: "Be Here Now", author: "Ram Dass" },
+    { title: "The Road Ahead", author: "Bill Gates" },
+    { title: "The Firm", author: "John Grisham" },
+    { title: "Blink: The Power of Thinking Without Thinking", author: "Malcolm Gladwell" },
+    { title: "The Motorcycle Diaries: Notes on a Latin American Journey", author: "Ernesto Che Guevara" },
+    { title: "Flowers for Algernon", author: "Daniel Keyes" },
+    { title: "The Namesake", author: "Jhumpa Lahiri" },
+    { title: "Animal Farm", author: "George Orwell" },
+    { title: "Harry Potter and the Order of the Phoenix (Harry Potter, #5)", author: "J.K. Rowling" },
+    { title: "Angels & Demons (Robert Langdon, #1)", author: "Dan Brown" },
+    { title: "The Kite Runner", author: "Khaled Hosseini" },
+    { title: "Confessions of a Serial Dieter", author: "Kalli Purie" },
+    { title: "Slaughterhouse-Five", author: "Kurt Vonnegut Jr." },
+    { title: "Candide", author: "Voltaire" },
+    { title: "Steve Jobs", author: "Walter Isaacson" },
+    { title: "Freakonomics: A Rogue Economist Explores the Hidden Side of Everything", author: "Steven D. Levitt" },
+    { title: "The Great Gatsby", author: "F. Scott Fitzgerald" },
+    { title: "The Alchemist", author: "Paulo Coelho" },
+    { title: "The Brief Wondrous Life of Oscar Wao", author: "Junot Díaz" },
+    { title: "Brave New World", author: "Aldous Huxley" },
+    { title: "5 Very Good Reasons to Punch a Dolphin in the Mouth and Other Useful Guides", author: "Matthew Inman" },
+    { title: "The Last Lecture", author: "Randy Pausch" },
+    { title: "The Road", author: "Cormac McCarthy" },
+    { title: "Lord of the Flies", author: "William Golding" },
   ];
 
   // ---- render ---------------------------------------------------------
@@ -600,11 +801,33 @@
     return el;
   }
 
+  function restEl(b){
+    const el = document.createElement('div');
+    el.className = 'rest-item';
+
+    const title = document.createElement('span');
+    title.className = 'rest-title';
+    title.textContent = b.title;
+    el.appendChild(title);
+
+    el.appendChild(document.createTextNode(' — '));
+
+    const author = document.createElement('span');
+    author.className = 'rest-author';
+    author.textContent = b.author;
+    el.appendChild(author);
+
+    return el;
+  }
+
   const shelf = document.getElementById('shelf');
   DATA.forEach(b => shelf.appendChild(bookEl(b)));
 
   const highlightTrack = document.getElementById('highlightTrack');
   DATA_HIGHLIGHTS.forEach(b => highlightTrack.appendChild(highlightEl(b)));
+
+  const restList = document.getElementById('restList');
+  DATA_REST.forEach(b => restList.appendChild(restEl(b)));
 
   // stagger a simple reveal as cards enter view
   const io = new IntersectionObserver((entries) => {
